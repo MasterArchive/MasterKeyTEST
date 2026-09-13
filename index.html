@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enter Key Puzzle</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0d0d0d;
+      background-image: radial-gradient(#1a1a1a 1px, transparent 0);
+      background-size: 8px 8px;
+      color: #d1cfb7;
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Viewport Wrapper */
+    .viewport-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Background Overlay */
+    .background-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('12669.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0.35;
+      z-index: 1;
+    }
+
+    /* Canvas Static Layer */
+    #static-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeInStatic 10s ease-in-out forwards;
+    }
+
+    /* Fullscreen Digital Glitch Layer */
+    #glitch-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      transition: opacity 0.4s ease;
+    }
+
+    @keyframes fadeInStatic {
+      0% { opacity: 0; }
+      100% { opacity: 0.25; }
+    }
+
+    /* Horizontal TV Scanlines Layer */
+    .tv-scanlines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.6) 50%,
+        rgba(0, 0, 0, 0.6)
+      );
+      background-size: 100% 4px;
+      animation: fadeInScanlines 10s ease-in-out forwards;
+    }
+
+    @keyframes fadeInScanlines {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* Moving Horizontal Scan Bar */
+    .tv-bar {
+      position: absolute;
+      top: -20%;
+      left: 0;
+      width: 100%;
+      height: 20%;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      z-index: 5;
+      pointer-events: none;
+      animation: scanBar 8s linear infinite;
+    }
+
+    @keyframes scanBar {
+      0% { top: -20%; }
+      100% { top: 120%; }
+    }
+
+    /* Container & Content */
+    .container {
+      position: relative;
+      z-index: 6;
+      max-width: 500px;
+      padding: 20px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      letter-spacing: 4px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      position: relative;
+      font-style: italic;
+      color: transparent;
+      background: repeating-radial-gradient(circle at 50% 50%, #ffffa0 0%, #333 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      opacity: 0.85;
+      filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.95)) drop-shadow(0px 2px 5px #000000);
+      display: inline-block;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+    }
+
+    h1:hover, h1:active {
+      opacity: 1;
+      filter: drop-shadow(0px 0px 8px rgba(255, 255, 160, 0.8)) drop-shadow(0px 0px 15px rgba(255, 0, 85, 0.6));
+      animation: headingStaticGlitch 0.15s infinite alternate;
+    }
+
+    @keyframes headingStaticGlitch {
+      0% { transform: skewX(0deg) translate(0, 0); }
+      20% { transform: skewX(12deg) translate(-3px, 1px); }
+      40% { transform: skewX(-8deg) translate(3px, -1px); }
+      60% { transform: skewX(4deg) translate(-1px, 2px); }
+      80% { transform: skewX(-10deg) translate(2px, -2px); }
+      100% { transform: skewX(0deg) translate(0, 0); }
+    }
+
+    p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      margin-bottom: 25px;
+    }
+
+    /* Form and Inputs */
+    .input-box {
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid #444;
+      color: #d1cfb7;
+      padding: 12px;
+      width: 80%;
+      max-width: 300px;
+      font-family: inherit;
+      letter-spacing: 2px;
+      text-align: center;
+      font-size: 1rem;
+      text-transform: lowercase;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-box:focus {
+      border-color: #888;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn {
+      display: block;
+      margin: 15px auto 0 auto;
+      background: #222;
+      color: #d1cfb7;
+      border: 1px solid #444;
+      padding: 8px 22px;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 2px;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #333;
+      border-color: #777;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      opacity: 0.4;
+      text-transform: uppercase;
+    }
+
+    #error {
+      color: #ff5555;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    /* Layer Specific Input Styles */
+    .layer2-input {
+      margin-top: 1.5rem;
+      border-color: #00ff66;
+      color: #00ff66;
+    }
+    .layer2-input:focus {
+      border-color: #00ff66;
+      box-shadow: 0 0 8px rgba(0, 255, 102, 0.5);
+    }
+
+    .layer3-input {
+      margin-top: 1.5rem;
+      border-color: #f3f3a8;
+      color: #f3f3a8;
+      background: rgba(10, 10, 5, 0.85);
+      position: relative;
+      z-index: 10;
+    }
+    .layer3-input:focus {
+      border-color: #ffffcc;
+      box-shadow: 0 0 10px rgba(243, 243, 168, 0.4);
+    }
+
+    /* SUCCESS SCREEN OVERLAY (LAYER 1) */
+    #success-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #050505;
+      color: #00ff66;
+      font-family: inherit;
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    #success-screen h2 {
+      font-size: 2.2rem;
+      letter-spacing: 6px;
+      color: #00ff66;
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.6), 0 0 20px rgba(0, 255, 102, 0.3);
+      border: 2px solid #00ff66;
+      padding: 15px 30px;
+      background: rgba(0, 20, 0, 0.8);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+    }
+
+    /* SUCCESS SCREEN OVERLAY (LAYER 2) */
+    #success-screen-layer2 {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      font-family: inherit;
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #tunnel-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #success-screen-layer2 h2 {
+      position: relative;
+      z-index: 10;
+      font-size: 2.3rem;
+      letter-spacing: 8px;
+      color: #f3f3a8;
+      text-transform: uppercase;
+      font-weight: bold;
+      border: 2px solid #f3f3a8;
+      padding: 18px 36px;
+      background: rgba(10, 10, 5, 0.8);
+      box-shadow: 
+        0 0 20px rgba(243, 243, 168, 0.3),
+        inset 0 0 15px rgba(243, 243, 168, 0.2);
+      text-shadow: 0 0 12px rgba(243, 243, 168, 0.6), 0 0 25px rgba(220, 220, 140, 0.4);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Secret Cipher Message */
+    .secret-corner-message {
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      color: #113311;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      text-align: right;
+      pointer-events: auto;
+      user-select: text;
+    }
+
+    /* FAKE SYSTEM CRASH SCREEN */
+    #crash-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #0000aa;
+      color: #ffffff;
+      font-family: monospace;
+      z-index: 99999;
+      padding: 40px;
+      text-align: left;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    #crash-screen h2 {
+      background-color: #aaaaaa;
+      color: #0000aa;
+      padding: 2px 8px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: inline-block;
+      margin-bottom: 25px;
+    }
+
+    #crash-screen p {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .crash-details {
+      margin-top: 30px;
+      color: #ffff55;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden pattern canvas -->
+  <canvas id="text-static-canvas" width="128" height="128" style="display:none;"></canvas>
+
+  <!-- Layer 1 Viewport -->
+  <div class="viewport-wrapper">
+    <div class="background-overlay"></div>
+    <canvas id="static-canvas"></canvas>
+    <canvas id="glitch-canvas"></canvas>
+    <div class="tv-scanlines"></div>
+    <div class="tv-bar"></div>
+    
+    <div class="container">
+      <h1 id="title-heading">Enter_key</h1>
+      <p>The first door is always the easiest.</p>
+      
+      <form id="keyForm">
+        <input type="text" id="keyInput" class="input-box" placeholder="ENTER KEY..." autocomplete="off" autofocus required>
+        <button type="submit" class="btn">SUBMIT</button>
+      </form>
+
+      <div id="error">INCORRECT KEY</div>
+      <div class="footer">Something is waiting</div>
+    </div>
+  </div>
+
+  <!-- Success Screen Overlay (Layer 1 - Green) -->
+  <div id="success-screen">
+    <h2>LAYER 1 COMPLETED</h2>
+    
+    <form id="layer2Form" style="margin-top: 20px;">
+      <input type="text" id="layer2Input" class="input-box layer2-input" placeholder="ENTER LAYER 2 KEY..." autocomplete="off" required>
+      <button type="submit" class="btn" style="border-color: #00ff66; color: #00ff66;">SUBMIT</button>
+    </form>
+
+    <div class="secret-corner-message">
+      K uvca cyca htqo oqtpkpi nkijv,<br>
+      Cpf eqog cnkxg kp fggr qh pkijv.
+    </div>
+  </div>
+
+  <!-- Success Screen Overlay (Layer 2 - Pale Yellow Tunnel) -->
+  <div id="success-screen-layer2">
+    <canvas id="tunnel-canvas"></canvas>
+    <h2>LAYER 2 COMPLETED</h2>
+    
+    <form id="layer3Form" style="position: relative; z-index: 10; margin-top: 20px;">
+      <input type="text" id="layer3Input" class="input-box layer3-input" placeholder="ENTER LAYER 3 KEY..." autocomplete="off">
+      <button type="submit" class="btn" style="border-color: #f3f3a8; color: #f3f3a8; background: rgba(10,10,5,0.8);">SUBMIT</button>
+    </form>
+  </div>
+
+  <!-- Crash Screen Overlay -->
+  <div id="crash-screen">
+    <h2>CONNECTION TERMINATED</h2>
+    <p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD SYSTEM(01).</p>
+    <p>The current application will be terminated.</p>
+    <br>
+    <p class="crash-details">*** Error 311</p>
+    <p class="crash-details">*** Key_Was_Lost</p>
+    <br>
+    <p>Press any key to restart your system...</p>
+  </div>
+
+  <script>
+    const SECRET_KEY_1 = "dodecahedron";
+    const SECRET_KEY_2 = "shadow";
+
+    const staticCanvas = document.getElementById('static-canvas');
+    const staticCtx = staticCanvas.getContext('2d');
+    const glitchCanvas = document.getElementById('glitch-canvas');
+    const glitchCtx = glitchCanvas.getContext('2d');
+    const textStaticCanvas = document.getElementById('text-static-canvas');
+    const textStaticCtx = textStaticCanvas.getContext('2d');
+    const tunnelCanvas = document.getElementById('tunnel-canvas');
+    const tunnelCtx = tunnelCanvas.getContext('2d');
+
+    const titleHeading = document.getElementById('title-heading');
+    const keyInput = document.getElementById('keyInput');
+    const layer2Input = document.getElementById('layer2Input');
+    const layer3Input = document.getElementById('layer3Input');
+    const successScreen = document.getElementById('success-screen');
+    const successScreenLayer2 = document.getElementById('success-screen-layer2');
+    const crashScreen = document.getElementById('crash-screen');
+    const errorDiv = document.getElementById('error');
+
+    let isGlitching = false;
+    let isHoveringHeading = false;
+    let tunnelAnimId = null;
+
+    function triggerCrash() {
+      document.querySelector('.viewport-wrapper').style.display = 'none';
+      successScreen.style.display = 'none';
+      successScreenLayer2.style.display = 'none';
+      crashScreen.style.display = 'flex';
+    }
+
+    function showError() {
+      errorDiv.style.display = 'block';
+      setTimeout(() => errorDiv.style.display = 'none', 2000);
+    }
+
+    /* Hover interactions */
+    titleHeading.addEventListener('mouseenter', () => isHoveringHeading = true);
+    titleHeading.addEventListener('mouseleave', () => isHoveringHeading = false);
+
+    /* Form Handlers */
+    document.getElementById('keyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = keyInput.value.trim().toLowerCase();
+      if (val === SECRET_KEY_1) {
+        document.querySelector('.viewport-wrapper').style.display = 'none';
+        successScreen.style.display = 'flex';
+        layer2Input.focus();
+      } else {
+        showError();
+      }
+    });
+
+    document.getElementById('layer2Form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = layer2Input.value.trim().toLowerCase();
+      if (val === SECRET_KEY_2) {
+        successScreen.style.display = 'none';
+        successScreenLayer2.style.display = 'flex';
+        startTunnelAnimation();
+        setTimeout(() => layer3Input.focus(), 100);
+      } else {
+        triggerCrash();
+      }
+    });
+
+    document.getElementById('layer3Form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      layer3Input.value = '';
+      layer3Input.placeholder = 'NO PASSWORD REQUIRED';
+    });
+
+    /* Resize Manager */
+    function resize() {
+      staticCanvas.width = window.innerWidth;
+      staticCanvas.height = window.innerHeight;
+      glitchCanvas.width = window.innerWidth;
+      glitchCanvas.height = window.innerHeight;
+      tunnelCanvas.width = window.innerWidth;
+      tunnelCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    /* Canvas Animations */
+    function generateStatic() {
+      const w = staticCanvas.width;
+      const h = staticCanvas.height;
+      if (w === 0 || h === 0) return;
+      
+      const imgData = staticCtx.createImageData(w, h);
+      const buffer = new Uint32Array(imgData.data.buffer);
+      for (let i = 0; i < buffer.length; i++) {
+        if (Math.random() < 0.5) buffer[i] = 0xffffffff;
+      }
+      staticCtx.putImageData(imgData, 0, 0);
+    }
+
+    function animateTextStatic() {
+      const imgData = textStaticCtx.createImageData(128, 128);
+      const data = imgData.data;
+      const noiseThreshold = isHoveringHeading ? 0.8 : 0.5;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const val = Math.random() < noiseThreshold ? 255 : (isHoveringHeading ? 50 : 120);
+        data[i] = 255; 
+        data[i + 1] = 255; 
+        data[i + 2] = val; 
+        data[i + 3] = 255;
+      }
+
+      textStaticCtx.putImageData(imgData, 0, 0);
+      titleHeading.style.backgroundImage = `url(${textStaticCanvas.toDataURL()})`;
+    }
+
+    setInterval(() => {
+      generateStatic();
+      animateTextStatic();
+    }, 80);
+
+    /* 3D Pale Yellow Tunnel Render Engine */
+    let zOffset = 0;
+    function startTunnelAnimation() {
+      if (tunnelAnimId) cancelAnimationFrame(tunnelAnimId);
+      
+      function renderTunnel() {
+        const w = tunnelCanvas.width;
+        const h = tunnelCanvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const fov = 420;
+
+        tunnelCtx.fillStyle = '#020201';
+        tunnelCtx.fillRect(0, 0, w, h);
+        zOffset += 0.025;
+
+        // Flare Glow
+        const flareGlow = tunnelCtx.createRadialGradient(cx, cy, 2, cx, cy, Math.max(w, h) * 0.35);
+        flareGlow.addColorStop(0, '#ffffff');
+        flareGlow.addColorStop(0.08, '#ffffd0');
+        flareGlow.addColorStop(0.25, '#e8e2aa');
+        flareGlow.addColorStop(0.55, 'rgba(160, 155, 110, 0.2)');
+        flareGlow.addColorStop(1, 'rgba(0,0,0,0)');
+
+        tunnelCtx.fillStyle = flareGlow;
+        tunnelCtx.beginPath();
+        tunnelCtx.arc(cx, cy, Math.max(w, h) * 0.35, 0, Math.PI * 2);
+        tunnelCtx.fill();
+
+        // Structural Rays
+        const numRings = 20;
+        const ringSpacing = 0.8;
+        tunnelCtx.strokeStyle = 'rgba(245, 240, 170, 0.4)';
+        tunnelCtx.lineWidth = 1;
+
+        for (let i = 0; i < numRings; i++) {
+          let z = ((i * ringSpacing - zOffset) % (numRings * ringSpacing));
+          if (z < 0.1) z += numRings * ringSpacing;
+          const scale = fov / z;
+          const r = 1.8 * scale;
+          
+          tunnelCtx.beginPath();
+          tunnelCtx.arc(cx, cy, r, 0, Math.PI * 2);
+          tunnelCtx.stroke();
+        }
+
+        tunnelAnimId = requestAnimationFrame(renderTunnel);
+      }
+      renderTunnel();
+    }
+  </script>
+</body>
+</html>
