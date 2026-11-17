@@ -3,628 +3,287 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enter Key Puzzle</title>
+  <meta name="theme-color" content="#080c10">
+  <meta name="description" content="A.R.C.H. — Authority for Research and Containment of Hazards. A fictional research archive and interactive terminal.">
+  <title>A.R.C.H. — Research & Containment Archive</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    :root {
+      --bg: #080c10; --surface: #0f161b; --surface-2: #131d23; --edge: #26383d;
+      --paper: #e9e9df; --muted: #91a29f; --teal: #99d9c8; --teal-dim: #356a60;
+      --amber: #eead6b; --red: #e48e80; --green: #add4ae;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --display: Impact, "Arial Narrow", "Roboto Condensed", sans-serif;
     }
-    body {
-      background-color: #0d0d0d;
-      background-image: radial-gradient(#1a1a1a 1px, transparent 0);
-      background-size: 8px 8px;
-      color: #d1cfb7;
-      font-family: 'Courier New', Courier, monospace;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Viewport Wrapper */
-    .viewport-wrapper {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* Background Overlay */
-    .background-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('12669.png') no-repeat center center;
-      background-size: contain;
-      opacity: 0.35;
-      z-index: 1;
-    }
-
-    /* Canvas Static Layer */
-    #static-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      pointer-events: none;
-      opacity: 0;
-      animation: fadeInStatic 10s ease-in-out forwards;
-    }
-
-    /* Fullscreen Digital Glitch Layer */
-    #glitch-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 3;
-      pointer-events: none;
-      opacity: 0;
-      mix-blend-mode: screen;
-      transition: opacity 0.4s ease;
-    }
-
-    @keyframes fadeInStatic {
-      0% { opacity: 0; }
-      100% { opacity: 0.25; }
-    }
-
-    /* Horizontal TV Scanlines Layer */
-    .tv-scanlines {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 4;
-      pointer-events: none;
-      opacity: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(255,255,255,0),
-        rgba(255,255,255,0) 50%,
-        rgba(0, 0, 0, 0.6) 50%,
-        rgba(0, 0, 0, 0.6)
-      );
-      background-size: 100% 4px;
-      animation: fadeInScanlines 10s ease-in-out forwards;
-    }
-
-    @keyframes fadeInScanlines {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    /* Moving Horizontal Scan Bar */
-    .tv-bar {
-      position: absolute;
-      top: -20%;
-      left: 0;
-      width: 100%;
-      height: 20%;
-      background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.08) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      z-index: 5;
-      pointer-events: none;
-      animation: scanBar 8s linear infinite;
-    }
-
-    @keyframes scanBar {
-      0% { top: -20%; }
-      100% { top: 120%; }
-    }
-
-    /* Container & Content */
-    .container {
-      position: relative;
-      z-index: 6;
-      max-width: 500px;
-      padding: 20px;
-      width: 100%;
-    }
-
-    h1 {
-      font-size: 2.3rem;
-      letter-spacing: 4px;
-      margin-bottom: 20px;
-      font-weight: bold;
-      position: relative;
-      font-style: italic;
-      color: transparent;
-      background: repeating-radial-gradient(circle at 50% 50%, #ffffa0 0%, #333 100%);
-      background-clip: text;
-      -webkit-background-clip: text;
-      opacity: 0.85;
-      filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.95)) drop-shadow(0px 2px 5px #000000);
-      display: inline-block;
-      cursor: pointer;
-      user-select: none;
-      transition: opacity 0.2s ease, filter 0.2s ease, transform 0.1s ease;
-    }
-
-    h1:hover, h1:active {
-      opacity: 1;
-      filter: drop-shadow(0px 0px 8px rgba(255, 255, 160, 0.8)) drop-shadow(0px 0px 15px rgba(255, 0, 85, 0.6));
-      animation: headingStaticGlitch 0.15s infinite alternate;
-    }
-
-    @keyframes headingStaticGlitch {
-      0% { transform: skewX(0deg) translate(0, 0); }
-      20% { transform: skewX(12deg) translate(-3px, 1px); }
-      40% { transform: skewX(-8deg) translate(3px, -1px); }
-      60% { transform: skewX(4deg) translate(-1px, 2px); }
-      80% { transform: skewX(-10deg) translate(2px, -2px); }
-      100% { transform: skewX(0deg) translate(0, 0); }
-    }
-
-    p {
-      font-size: 0.95rem;
-      opacity: 0.8;
-      margin-bottom: 25px;
-    }
-
-    /* Form and Inputs */
-    .input-box {
-      background: rgba(0, 0, 0, 0.75);
-      border: 1px solid #444;
-      color: #d1cfb7;
-      padding: 12px;
-      width: 80%;
-      max-width: 300px;
-      font-family: inherit;
-      letter-spacing: 2px;
-      text-align: center;
-      font-size: 1rem;
-      text-transform: lowercase;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .input-box:focus {
-      border-color: #888;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
-    }
-
-    .btn {
-      display: block;
-      margin: 15px auto 0 auto;
-      background: #222;
-      color: #d1cfb7;
-      border: 1px solid #444;
-      padding: 8px 22px;
-      cursor: pointer;
-      font-family: inherit;
-      letter-spacing: 2px;
-      transition: background 0.2s ease, border-color 0.2s ease;
-    }
-
-    .btn:hover {
-      background: #333;
-      border-color: #777;
-    }
-
-    .footer {
-      margin-top: 40px;
-      font-size: 0.75rem;
-      letter-spacing: 3px;
-      opacity: 0.4;
-      text-transform: uppercase;
-    }
-
-    #error {
-      color: #ff5555;
-      font-size: 0.85rem;
-      letter-spacing: 1px;
-      margin-top: 15px;
-      display: none;
-    }
-
-    /* Layer Specific Input Styles */
-    .layer2-input {
-      margin-top: 1.5rem;
-      border-color: #00ff66;
-      color: #00ff66;
-    }
-    .layer2-input:focus {
-      border-color: #00ff66;
-      box-shadow: 0 0 8px rgba(0, 255, 102, 0.5);
-    }
-
-    .layer3-input {
-      margin-top: 1.5rem;
-      border-color: #f3f3a8;
-      color: #f3f3a8;
-      background: rgba(10, 10, 5, 0.85);
-      position: relative;
-      z-index: 10;
-    }
-    .layer3-input:focus {
-      border-color: #ffffcc;
-      box-shadow: 0 0 10px rgba(243, 243, 168, 0.4);
-    }
-
-    /* SUCCESS SCREEN OVERLAY (LAYER 1) */
-    #success-screen {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #050505;
-      color: #00ff66;
-      font-family: inherit;
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      text-align: center;
-    }
-
-    #success-screen h2 {
-      font-size: 2.2rem;
-      letter-spacing: 6px;
-      color: #00ff66;
-      text-shadow: 0 0 10px rgba(0, 255, 102, 0.6), 0 0 20px rgba(0, 255, 102, 0.3);
-      border: 2px solid #00ff66;
-      padding: 15px 30px;
-      background: rgba(0, 20, 0, 0.8);
-      box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
-    }
-
-    /* SUCCESS SCREEN OVERLAY (LAYER 2) */
-    #success-screen-layer2 {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #000000;
-      font-family: inherit;
-      z-index: 10000;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    #tunnel-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    #success-screen-layer2 h2 {
-      position: relative;
-      z-index: 10;
-      font-size: 2.3rem;
-      letter-spacing: 8px;
-      color: #f3f3a8;
-      text-transform: uppercase;
-      font-weight: bold;
-      border: 2px solid #f3f3a8;
-      padding: 18px 36px;
-      background: rgba(10, 10, 5, 0.8);
-      box-shadow: 
-        0 0 20px rgba(243, 243, 168, 0.3),
-        inset 0 0 15px rgba(243, 243, 168, 0.2);
-      text-shadow: 0 0 12px rgba(243, 243, 168, 0.6), 0 0 25px rgba(220, 220, 140, 0.4);
-      backdrop-filter: blur(4px);
-    }
-
-    /* Secret Cipher Message */
-    .secret-corner-message {
-      position: absolute;
-      bottom: 15px;
-      right: 20px;
-      color: #113311;
-      font-size: 0.75rem;
-      line-height: 1.4;
-      text-align: right;
-      pointer-events: auto;
-      user-select: text;
-    }
-
-    /* FAKE SYSTEM CRASH SCREEN */
-    #crash-screen {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #0000aa;
-      color: #ffffff;
-      font-family: monospace;
-      z-index: 99999;
-      padding: 40px;
-      text-align: left;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-    }
-
-    #crash-screen h2 {
-      background-color: #aaaaaa;
-      color: #0000aa;
-      padding: 2px 8px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      display: inline-block;
-      margin-bottom: 25px;
-    }
-
-    #crash-screen p {
-      font-size: 1rem;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-
-    .crash-details {
-      margin-top: 30px;
-      color: #ffff55;
-    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--paper); background: var(--bg); font-family: var(--mono); line-height: 1.55; overflow-x: hidden; }
+    body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.16; z-index:0; background:linear-gradient(90deg,transparent 49.6%,#193239 50%,transparent 50.4%) 0 0/84px 84px,linear-gradient(transparent 49.6%,#193239 50%,transparent 50.4%) 0 0/84px 84px; }
+    body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:100; opacity:.08; background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,#c5ffdf 4px); mix-blend-mode:screen; }
+    a {color:inherit;text-decoration:none} button,input {font:inherit}
+    button {cursor:pointer}
+    button:focus-visible,a:focus-visible,input:focus-visible {outline:2px solid var(--teal);outline-offset:3px}
+    ::selection {background:var(--teal);color:#07100f}
+    .wrap {width:min(1210px,calc(100% - 54px)); margin:auto;position:relative;z-index:1}
+    .meta-line {height:30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--edge);font-size:10px;letter-spacing:.13em;color:var(--muted);}
+    .meta-line .online::before {content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal);margin-right:9px}
+    header {border-bottom:1px solid var(--edge);position:relative;z-index:3;}
+    .head {height:87px;display:flex;align-items:center;gap:20px;justify-content:space-between}
+    .brand {display:flex;align-items:center;gap:14px;min-width:200px}
+    .brand-mark {width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--teal-dim);color:var(--teal);background:#0f2526;clip-path:polygon(50% 0,100% 22%,100% 78%,50% 100%,0 78%,0 22%)}
+    .brand-mark svg {height:28px;width:28px}
+    .brand-name {font:bold 27px/1 var(--display);letter-spacing:.11em}
+    .brand-sub {font-size:9px;letter-spacing:.1em;color:var(--muted);margin-top:4px}
+    nav {display:flex;gap:29px;align-items:center}
+    nav a {font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:#b3c1bd;transition:color .2s}
+    nav a:hover {color:var(--teal)}
+    .status-chip {border:1px solid var(--teal-dim);padding:9px 11px;color:var(--teal);font-size:10px;letter-spacing:.13em;white-space:nowrap}
+    .hero {padding:93px 0 78px;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.85fr);gap:30px;align-items:center;min-height:592px}
+    .eyebrow {display:flex;align-items:center;gap:13px;color:var(--teal);font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+    .eyebrow::before {content:"";width:26px;height:1px;background:var(--teal)}
+    h1 {font:normal clamp(65px,9vw,134px)/.88 var(--display);letter-spacing:.035em;margin:24px 0 24px;max-width:690px;text-transform:uppercase}
+    h1 em {font-style:normal;color:var(--teal)}
+    .hero-desc {font-size:13px;line-height:1.9;max-width:470px;color:#a7b6b2}
+    .hero-actions {display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+    .btn {display:inline-flex;align-items:center;justify-content:center;gap:20px;padding:13px 18px;letter-spacing:.12em;font-size:11px;text-transform:uppercase;min-height:44px;border:1px solid var(--teal-dim);transition:background .2s,transform .2s}
+    .btn:hover {transform:translateY(-2px)}
+    .btn.primary {background:var(--teal);color:#08201d;border-color:var(--teal);font-weight:bold}
+    .btn.secondary {color:var(--teal);background:#0a1618}
+    .hero-visual {position:relative;min-height:460px;display:grid;place-items:center;isolation:isolate}
+    .hero-visual::before {content:"";position:absolute;inset:7%;border:1px solid #204244;border-radius:50%;box-shadow:0 0 90px #376e6332,inset 0 0 75px #2c76641a;animation:rotate 50s linear infinite}
+    .hero-visual::after {content:"";position:absolute;width:76%;aspect-ratio:1;border:1px dashed #3e5e5d;border-radius:50%;animation:rotate 45s linear infinite reverse}
+    .cross-h,.cross-v {position:absolute;background:#35605a88;z-index:-1}
+    .cross-h {height:1px;width:100%}.cross-v {width:1px;height:100%}
+    .orb {position:absolute;width:60%;aspect-ratio:1;background:radial-gradient(circle,#81e6c224 0%,#155b5632 18%,transparent 65%);filter:blur(20px)}
+    .insignia {width:min(90%,405px);height:auto;filter:drop-shadow(0 0 24px #81e6c26b);animation:hover 7s ease-in-out infinite}
+    .visual-tag {position:absolute;left:3%;top:10%;font-size:10px;letter-spacing:.14em;color:var(--muted)}
+    .visual-corner {position:absolute;bottom:9%;right:1%;text-align:right;font-size:10px;letter-spacing:.12em;color:var(--teal)}
+    .running-strip {border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);background:#10191d;}
+    .strip-inner {display:flex;justify-content:space-between;gap:25px;padding:16px 0;font-size:10px;letter-spacing:.15em;color:var(--muted);flex-wrap:wrap}
+    .strip-inner b {color:var(--amber);font-weight:normal}
+    section {scroll-margin-top:18px}
+    .section-head {display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:28px}
+    .kicker {font-size:10px;color:var(--teal);letter-spacing:.2em;text-transform:uppercase}
+    h2 {font:normal clamp(40px,5.1vw,69px)/1 var(--display);letter-spacing:.035em;text-transform:uppercase;margin:8px 0 0}
+    .section-blurb {font-size:11px;color:var(--muted);max-width:370px;line-height:1.8}
+    .overview {padding:80px 0 24px}
+    .metric-row {display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--edge)}
+    .metric {padding:26px 26px;border-right:1px solid var(--edge);background:#0c1317}
+    .metric:last-child{border:0}
+    .metric .num {font:normal 52px/1 var(--display);color:var(--paper)}
+    .metric .meta {font-size:10px;letter-spacing:.12em;color:var(--muted);margin-top:14px;text-transform:uppercase}
+    .archive {padding:80px 0}
+    .search-row {display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap}
+    .searchbox {display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--edge);padding:0 16px;min-width:260px;max-width:410px;flex:1;color:var(--teal)}
+    .searchbox input {width:100%;border:0;outline:none;background:transparent;color:var(--paper);font-size:12px;padding:14px 0;min-width:0}
+    .searchbox input::placeholder{color:#738781}
+    .filters {display:flex;gap:7px;flex-wrap:wrap}
+    .filter {padding:10px 13px;background:transparent;border:1px solid var(--edge);color:var(--muted);text-transform:uppercase;letter-spacing:.11em;font-size:10px}
+    .filter[aria-pressed="true"]{border-color:var(--teal-dim);background:#17332e;color:var(--teal)}
+    .cards {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+    .case-card {border:1px solid var(--edge);background:linear-gradient(150deg,#111b20,#0b1216);padding:24px;min-height:244px;display:flex;flex-direction:column;position:relative;transition:border-color .2s,transform .2s;text-align:left;color:inherit;width:100%}
+    .case-card:hover {border-color:var(--teal-dim);transform:translateY(-3px)}
+    .case-card::after {content:"+";font-size:21px;position:absolute;right:20px;bottom:15px;color:var(--teal)}
+    .card-top {display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .case-id {font-size:12px;letter-spacing:.12em;color:var(--teal)}
+    .case-rank {font-size:9px;border:1px solid #4c4440;color:var(--amber);padding:3px 6px;letter-spacing:.07em}
+    .case-rank.omega {color:var(--red);border-color:#673d3b}
+    .case-rank.pending {color:#81918a;border-color:#364740}
+    .case-name {font:normal 31px/1.06 var(--display);margin:27px 0 11px;letter-spacing:.025em;text-transform:uppercase}
+    .case-text {font-size:11px;color:#98aaa6;line-height:1.8;margin:0 0 25px;flex:1}
+    .card-foot {font-size:9px;color:#668078;letter-spacing:.12em;text-transform:uppercase;padding-right:15px}
+    .empty {grid-column:1 / -1;padding:35px;background:var(--surface);color:var(--muted);border:1px dashed var(--edge)}
+    .divisions {padding:35px 0 80px}
+    .division-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+    .division {border:1px solid var(--edge);background:#0d1519;padding:26px;min-height:230px;position:relative;overflow:hidden}
+    .division::before {content:attr(data-num);position:absolute;right:-6px;bottom:-50px;font:normal 200px/.8 var(--display);color:#213e3b4f;pointer-events:none}
+    .division .small {font-size:10px;letter-spacing:.16em;color:var(--teal)}
+    .division h3 {font:normal 33px/1.1 var(--display);max-width:260px;text-transform:uppercase;letter-spacing:.02em;margin:27px 0 20px;position:relative}
+    .division p {position:relative;color:var(--muted);font-size:11px;margin:0}
+    .systems {padding:0 0 85px}
+    .system-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+    .system {border-top:2px solid var(--teal-dim);background:var(--surface);padding:22px;min-height:180px}
+    .system b {font:normal 29px/1 var(--display);display:block;margin:22px 0 12px}
+    .system p {font-size:11px;line-height:1.7;color:var(--muted);margin:0}
+    .system .small {font-size:10px;color:var(--teal);letter-spacing:.13em}
+    .terminal-wrap {border:1px solid #34544d;background:#07110f;margin-bottom:95px;box-shadow:0 0 50px #24645312}
+    .terminal-top {display:flex;justify-content:space-between;gap:10px;align-items:center;background:#102620;padding:12px 19px;border-bottom:1px solid #34544d;color:#b3dfd1;font-size:10px;letter-spacing:.14em}
+    .lights {display:flex;gap:7px}.lights i {width:7px;height:7px;border-radius:50%;background:var(--teal-dim)}.lights i:first-child{background:#c69166}.lights i:nth-child(2){background:#8da56c}
+    .terminal-body {padding:25px;min-height:255px;max-height:320px;overflow:auto;font-size:12px;line-height:1.85;color:#abd2bc}
+    .terminal-body .cmd {color:var(--paper)}.terminal-body .warn {color:var(--amber)}.terminal-body .dim {color:#718e80}
+    .terminal-input {display:flex;align-items:center;gap:10px;border-top:1px solid #34544d;padding:14px 19px;color:var(--teal)}
+    .terminal-input input {border:0;outline:0;background:none;flex:1;color:var(--paper);min-width:0;padding:6px;font-size:12px}
+    .terminal-input button {background:var(--teal);color:#07211a;border:0;padding:8px 13px;font-size:11px;font-weight:bold}
+    footer {border-top:1px solid var(--edge);padding:26px 0 42px;color:var(--muted);font-size:10px;letter-spacing:.1em}
+    .footer-row {display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .footer-row strong {color:var(--paper)}
+    .modal {position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:16px;background:#020706df;backdrop-filter:blur(8px)}
+    .modal.is-open {display:flex}
+    .modal-panel {width:min(670px,100%);max-height:min(92vh,830px);overflow:auto;border:1px solid var(--teal-dim);background:#0c1519;box-shadow:0 25px 110px #000b}
+    .modal-head {display:flex;justify-content:space-between;gap:20px;align-items:center;background:#132b27;border-bottom:1px solid var(--teal-dim);padding:14px 23px;color:var(--teal);font-size:11px;letter-spacing:.1em}
+    .modal-close {background:transparent;border:1px solid #477067;color:var(--teal);min-height:32px;min-width:34px}
+    .modal-body {padding:35px}
+    .modal-id {color:var(--teal);font-size:12px;letter-spacing:.15em}
+    .modal-title {font:normal clamp(40px,8vw,70px)/1 var(--display);letter-spacing:.02em;text-transform:uppercase;margin:15px 0 26px}
+    .detail-grid {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:30px}
+    .detail {border:1px solid var(--edge);padding:12px}.detail .tag {display:block;color:var(--muted);font-size:9px;letter-spacing:.12em;margin-bottom:6px}.detail .value {font-size:12px;color:var(--paper)}
+    .report-label {font-size:11px;letter-spacing:.14em;color:var(--teal);border-bottom:1px solid var(--edge);padding-bottom:10px}
+    .report {font-size:12px;line-height:2;color:#b3c2bd;white-space:pre-line}
+    .modal-note {border-left:2px solid var(--amber);padding:12px 15px;color:var(--amber);font-size:10px;background:#2a211a57;margin-top:22px}
+    @keyframes hover {50%{transform:translateY(-11px)}} @keyframes rotate {to {transform:rotate(360deg)}}
+    @media(max-width:990px){nav{gap:15px}.hero{grid-template-columns:1fr .8fr;min-height:0}.hero-visual{min-height:340px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.system-grid{grid-template-columns:repeat(2,1fr)}.brand-sub{display:none}}
+    @media(max-width:730px){.wrap{width:min(100% - 28px,1210px)}.head{height:auto;padding:16px 0;align-items:flex-start;flex-wrap:wrap;gap:15px}nav{order:3;overflow-x:auto;width:100%;padding-bottom:3px;gap:23px}nav a{white-space:nowrap}.status-chip{margin-left:auto}.hero{grid-template-columns:1fr;padding:57px 0 45px;gap:5px}.hero-visual{min-height:295px}.insignia{width:260px}h1{font-size:clamp(64px,15vw,108px)}.visual-tag{left:10%}.visual-corner{right:9%}.overview,.archive{padding:60px 0}.section-head{display:block}.section-blurb{margin-top:12px}.metric-row{grid-template-columns:repeat(2,1fr)}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid var(--edge)}.metric{padding:19px}.division-grid{grid-template-columns:1fr}.division{min-height:170px}.division h3{margin:22px 0 9px}.division::before{font-size:150px;bottom:-35px}.strip-inner{gap:9px}.strip-inner span:last-child{display:none}}
+    @media(max-width:490px){.meta-line{font-size:8px}.status-chip{font-size:8px}.brand{min-width:unset}.brand-name{font-size:24px}.brand-mark{width:39px;height:39px}nav{gap:17px}nav a{font-size:10px}.cards,.system-grid{grid-template-columns:1fr}.case-card{min-height:205px}.search-row{align-items:stretch}.searchbox{min-width:100%}.filters{width:100%}.filter{flex:1}.metric .num{font-size:43px}.modal-body{padding:24px}.detail-grid{grid-template-columns:1fr}.hero-visual{min-height:270px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
 <body>
-
-  <!-- Hidden pattern canvas -->
-  <canvas id="text-static-canvas" width="128" height="128" style="display:none;"></canvas>
-
-  <!-- Layer 1 Viewport -->
-  <div class="viewport-wrapper">
-    <div class="background-overlay"></div>
-    <canvas id="static-canvas"></canvas>
-    <canvas id="glitch-canvas"></canvas>
-    <div class="tv-scanlines"></div>
-    <div class="tv-bar"></div>
-    
-    <div class="container">
-      <h1 id="title-heading">Enter_key</h1>
-      <p>The first door is always the easiest.</p>
-      
-      <form id="keyForm">
-        <input type="text" id="keyInput" class="input-box" placeholder="ENTER KEY..." autocomplete="off" autofocus required>
-        <button type="submit" class="btn">SUBMIT</button>
-      </form>
-
-      <div id="error">INCORRECT KEY</div>
-      <div class="footer">Something is waiting</div>
+  <header>
+    <div class="meta-line wrap"><span>A.R.C.H. // PUBLIC ACCESS PORTAL</span><span class="online">ARCHIVE NODE ONLINE</span></div>
+    <div class="head wrap">
+      <a class="brand" href="#top" aria-label="A.R.C.H. homepage">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><path d="M50 8 L88 73 H12 Z" stroke="currentColor" stroke-width="5"/><circle cx="50" cy="59" r="15" stroke="currentColor" stroke-width="4"/><path d="M50 12 V43 M20 73 H80" stroke="currentColor" stroke-width="4"/></svg></span>
+        <span><span class="brand-name">A.R.C.H.</span><span class="brand-sub">RESEARCH / CONTAINMENT / HAZARDS</span></span>
+      </a>
+      <nav aria-label="Main navigation"><a href="#overview">Overview</a><a href="#archives">Case files</a><a href="#divisions">Divisions</a><a href="#systems">Systems</a><a href="#terminal">Terminal</a></nav>
+      <div class="status-chip">ACCESS LEVEL 01</div>
+    </div>
+  </header>
+  <main id="top">
+    <div class="wrap hero">
+      <div>
+        <div class="eyebrow">Authority for Research and Containment of Hazards</div>
+        <h1>THE <em>UNKNOWN</em><br>IS UNDER<br>OBSERVATION.</h1>
+        <p class="hero-desc">A secure index of anomalous research cases, restricted divisions and experimental systems. Public records are available for review. Further clearance is not guaranteed.</p>
+        <div class="hero-actions"><a class="btn primary" href="#archives">EXPLORE THE ARCHIVE <span aria-hidden="true">↗</span></a><a class="btn secondary" href="#terminal">OPEN TERMINAL <span aria-hidden="true">_</span></a></div>
+      </div>
+      <div class="hero-visual" aria-label="Animated geometric A.R.C.H. insignia">
+        <div class="cross-h"></div><div class="cross-v"></div><div class="orb"></div>
+        <div class="visual-tag">SIGNAL 001<br>RESEARCH SECTOR</div>
+        <svg class="insignia" viewBox="0 0 400 400" role="img" aria-label="Geometric triangular research symbol">
+          <defs><linearGradient id="sig" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dcf7e5"/><stop offset=".55" stop-color="#80d6c2"/><stop offset="1" stop-color="#2c7975"/></linearGradient></defs>
+          <circle cx="200" cy="200" r="155" stroke="#397366" stroke-width="1" stroke-dasharray="3 12" fill="none"/>
+          <circle cx="200" cy="200" r="125" stroke="#34615b" stroke-width="2" fill="none"/>
+          <path d="M200 61 L342 310 H58 Z" fill="#153e3b35" stroke="url(#sig)" stroke-width="5"/>
+          <path d="M200 112 L298 281 H102 Z" stroke="#84c7b3" stroke-width="1.5" fill="none" opacity=".7"/>
+          <circle cx="200" cy="226" r="58" fill="#082820" stroke="url(#sig)" stroke-width="4"/>
+          <circle cx="200" cy="226" r="32" fill="none" stroke="#a8e4d4" stroke-width="2"/>
+          <path d="M200 61 V170 M58 310 H342" stroke="url(#sig)" stroke-width="3"/>
+          <circle cx="200" cy="226" r="7" fill="#bdfae2"/>
+          <path d="M200 48V28 M200 352V372 M48 200H28 M352 200H372" stroke="#5c9c8d" stroke-width="2"/>
+        </svg>
+        <div class="visual-corner">▲ CONTAINMENT IS CONTINUITY<br>EST. [REDACTED]</div>
+      </div>
+    </div>
+    <div class="running-strip"><div class="strip-inner wrap"><span><b>◈ SYSTEM STATUS</b> &nbsp; ARCHIVE AVAILABLE</span><span>PROTOCOL // OBSERVE • RECORD • CONTAIN</span><span>AUTHORIZED RECORDS ONLY</span></div></div>
+    <section class="overview wrap" id="overview">
+      <div class="section-head"><div><div class="kicker">01 / Network summary</div><h2>OPERATIONS OVERVIEW</h2></div><p class="section-blurb">A.R.C.H. investigates unexplained phenomena and catalogs research assets across specialized divisions.</p></div>
+      <div class="metric-row"><div class="metric"><div class="num" id="record-count">11</div><div class="meta">Indexed case files</div></div><div class="metric"><div class="num">03</div><div class="meta">Research divisions</div></div><div class="metric"><div class="num">04</div><div class="meta">Featured systems</div></div><div class="metric"><div class="num">01</div><div class="meta">Public access tier</div></div></div>
+    </section>
+    <section class="archive wrap" id="archives">
+      <div class="section-head"><div><div class="kicker">02 / Anomalous research cases</div><h2>CASE FILE ARCHIVE</h2></div><p class="section-blurb">Search the indexed files. Select any record for its available research summary.</p></div>
+      <div class="search-row"><label class="searchbox"><span aria-hidden="true">⌕</span><input id="case-search" type="search" placeholder="Search ARC number or designation..." aria-label="Search case files" autocomplete="off"></label><div class="filters" role="group" aria-label="Case filters"><button type="button" class="filter" data-filter="all" aria-pressed="true">All files</button><button type="button" class="filter" data-filter="documented" aria-pressed="false">Documented</button><button type="button" class="filter" data-filter="pending" aria-pressed="false">Pending</button></div></div>
+      <div class="cards" id="case-grid" aria-live="polite"></div>
+    </section>
+    <section class="divisions wrap" id="divisions">
+      <div class="section-head"><div><div class="kicker">03 / Specialized research</div><h2>FIELD DIVISIONS</h2></div><p class="section-blurb">Division designations correspond to themed case ranges within the wider archive.</p></div>
+      <div class="division-grid">
+        <article class="division" data-num="01"><span class="small">DIVISION 01 // ARC-010—019</span><h3>THREATS OF THE OCEAN FLOOR</h3><p>Status: archive entries awaiting publication</p></article>
+        <article class="division" data-num="02"><span class="small">DIVISION 02 // ARC-020—029</span><h3>WORLD ABOVE SKY</h3><p>Status: archive entries awaiting publication</p></article>
+        <article class="division" data-num="03"><span class="small">DIVISION 03 // IN DEVELOPMENT</span><h3>TOXIC WASTELAND</h3><p>Status: division under construction</p></article>
+      </div>
+    </section>
+    <section class="systems wrap" id="systems">
+      <div class="section-head"><div><div class="kicker">04 / Research equipment & programs</div><h2>ACTIVE SYSTEMS</h2></div><p class="section-blurb">Selected experimental platforms from the A.R.C.H. fictional technology registry.</p></div>
+      <div class="system-grid">
+        <article class="system"><span class="small">EXPLORATION / F.L.E.A.</span><b>F.L.E.A.</b><p>Fast-Light Exploration Aircraft — a compact deep-space observation craft designed to return visual data.</p></article>
+        <article class="system"><span class="small">DEEP SPACE / VAEL'KYRE</span><b>VAEL'KYRE</b><p>Long-range exploratory vessel with regenerative systems and an unusual propulsion architecture.</p></article>
+        <article class="system"><span class="small">ORBITAL / PREDATOR</span><b>PREDATOR V1</b><p>Early-generation orbital surveillance platform from the Predator program.</p></article>
+        <article class="system"><span class="small">ORBITAL / PREDATOR</span><b>PREDATOR V2</b><p>Expanded second-generation platform with advanced observation and tracking capabilities.</p></article>
+      </div>
+    </section>
+    <section class="wrap" id="terminal" aria-label="Interactive archive terminal">
+      <div class="section-head"><div><div class="kicker">05 / Command interface</div><h2>ARCHIVE TERMINAL</h2></div><p class="section-blurb">Try <code>help</code>, <code>list</code>, <code>status</code> or <code>open ARC-420</code>.</p></div>
+      <div class="terminal-wrap">
+        <div class="terminal-top"><span>ARCH // INTERNAL TERMINAL [PUBLIC SIMULATION]</span><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+        <div class="terminal-body" id="terminal-log" role="log" aria-label="Terminal output" aria-live="polite"><div>ARCH-OS v0.1 // READ-ONLY ARCHIVE INTERFACE</div><div class="dim">Connected to public access node.</div><div class="dim">Type HELP for available commands.</div></div>
+        <form class="terminal-input" id="terminal-form" autocomplete="off"><span aria-hidden="true">ARCH&gt;</span><input id="terminal-command" aria-label="Terminal command" spellcheck="false" placeholder="Enter command..." maxlength="100"><button type="submit">EXECUTE ↵</button></form>
+      </div>
+    </section>
+  </main>
+  <footer><div class="footer-row wrap"><span><strong>A.R.C.H.</strong> — AUTHORITY FOR RESEARCH AND CONTAINMENT OF HAZARDS</span><span>FICTIONAL UNIVERSE // FAN-MADE INTERACTIVE ARCHIVE</span></div></footer>
+  <div class="modal" id="file-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-panel"><div class="modal-head"><span>ARCH // RESEARCH RECORD</span><button class="modal-close" id="modal-close" aria-label="Close file">✕</button></div>
+      <div class="modal-body"><div class="modal-id" id="modal-id"></div><h3 class="modal-title" id="modal-title"></h3><div class="detail-grid"><div class="detail"><span class="tag">CLASSIFICATION</span><span class="value" id="modal-class"></span></div><div class="detail"><span class="tag">RECORD STATUS</span><span class="value" id="modal-status"></span></div><div class="detail"><span class="tag">CASE TYPE</span><span class="value" id="modal-type"></span></div><div class="detail"><span class="tag">ARCHIVE ACCESS</span><span class="value">LEVEL 01 / PUBLIC EXCERPT</span></div></div><div class="report-label">RESEARCH SUMMARY</div><p class="report" id="modal-report"></p><div class="modal-note">NOTICE: Public-facing excerpts may be incomplete. This is a fictional A.R.C.H. archive.</div></div>
     </div>
   </div>
-
-  <!-- Success Screen Overlay (Layer 1 - Green) -->
-  <div id="success-screen">
-    <h2>LAYER 1 COMPLETED</h2>
-    
-    <form id="layer2Form" style="margin-top: 20px;">
-      <input type="text" id="layer2Input" class="input-box layer2-input" placeholder="ENTER LAYER 2 KEY..." autocomplete="off" required>
-      <button type="submit" class="btn" style="border-color: #00ff66; color: #00ff66;">SUBMIT</button>
-    </form>
-
-    <div class="secret-corner-message">
-      K uvca cyca htqo oqtpkpi nkijv,<br>
-      Cpf eqog cnkxg kp fggr qh pkijv.
-    </div>
-  </div>
-
-  <!-- Success Screen Overlay (Layer 2 - Pale Yellow Tunnel) -->
-  <div id="success-screen-layer2">
-    <canvas id="tunnel-canvas"></canvas>
-    <h2>LAYER 2 COMPLETED</h2>
-    
-    <form id="layer3Form" style="position: relative; z-index: 10; margin-top: 20px;">
-      <input type="text" id="layer3Input" class="input-box layer3-input" placeholder="ENTER LAYER 3 KEY..." autocomplete="off">
-      <button type="submit" class="btn" style="border-color: #f3f3a8; color: #f3f3a8; background: rgba(10,10,5,0.8);">SUBMIT</button>
-    </form>
-  </div>
-
-  <!-- Crash Screen Overlay -->
-  <div id="crash-screen">
-    <h2>CONNECTION TERMINATED</h2>
-    <p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD SYSTEM(01).</p>
-    <p>The current application will be terminated.</p>
-    <br>
-    <p class="crash-details">*** Error 311</p>
-    <p class="crash-details">*** Key_Was_Lost</p>
-    <br>
-    <p>Press any key to restart your system...</p>
-  </div>
-
   <script>
-    const SECRET_KEY_1 = "dodecahedron";
-    const SECRET_KEY_2 = "shadow";
-
-    const staticCanvas = document.getElementById('static-canvas');
-    const staticCtx = staticCanvas.getContext('2d');
-    const glitchCanvas = document.getElementById('glitch-canvas');
-    const glitchCtx = glitchCanvas.getContext('2d');
-    const textStaticCanvas = document.getElementById('text-static-canvas');
-    const textStaticCtx = textStaticCanvas.getContext('2d');
-    const tunnelCanvas = document.getElementById('tunnel-canvas');
-    const tunnelCtx = tunnelCanvas.getContext('2d');
-
-    const titleHeading = document.getElementById('title-heading');
-    const keyInput = document.getElementById('keyInput');
-    const layer2Input = document.getElementById('layer2Input');
-    const layer3Input = document.getElementById('layer3Input');
-    const successScreen = document.getElementById('success-screen');
-    const successScreenLayer2 = document.getElementById('success-screen-layer2');
-    const crashScreen = document.getElementById('crash-screen');
-    const errorDiv = document.getElementById('error');
-
-    let isGlitching = false;
-    let isHoveringHeading = false;
-    let tunnelAnimId = null;
-
-    function triggerCrash() {
-      document.querySelector('.viewport-wrapper').style.display = 'none';
-      successScreen.style.display = 'none';
-      successScreenLayer2.style.display = 'none';
-      crashScreen.style.display = 'flex';
+    // Edit this array to add more canonical A.R.C.H. files.
+    // Unknown details are intentionally marked as pending instead of invented.
+    const CASES = [
+      { id:'ARC-001', name:'Moon Shatter', rank:'APOCALYPTIC', type:'Virus / Incident', status:'documented', excerpt:'The lunar catastrophe linked to TTX-1 and the emergence of TRX-2.', report:'A catastrophic lunar event occurred after exceptionally powerful solar activity fractured the Moon. The substance known as TTX-1 (Ten-triage-xenolyt), formerly cataloged under other designations, was dispersed toward Earth.\n\nContact with the substance is associated in A.R.C.H. records with TRX-2, an anomalous gelatinous organism. TTX-1 is also registered in the F.L.E.A. research program under strict fictional containment procedures.\n\nHistorical archive term: “Moon Shatter.”' },
+      { id:'ARC-002', name:'Photosynthesis Booster', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'An index entry exists for Photosynthesis Booster. Its description, hazard class and containment notes have not yet been added to this public archive.' },
+      { id:'ARC-003', name:'Solidifier', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'An index entry exists for Solidifier. Research notes are awaiting publication.' },
+      { id:'ARC-004', name:'Headhunter', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'A named anomalous case with restricted details.', report:'The case name Headhunter is registered. A detailed public research summary has not been provided.' },
+      { id:'ARC-005', name:"Mew’er", rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'A.R.C.H. index entry: Mew’er. Research notes are awaiting publication.' },
+      { id:'ARC-006', name:'Suspicious Looking Meat', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'A.R.C.H. index entry: Suspicious Looking Meat. Research notes are awaiting publication.' },
+      { id:'ARC-007', name:'Furnace', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'A.R.C.H. index entry: Furnace. Research notes are awaiting publication.' },
+      { id:'ARC-008', name:'Humanoid Death Whisper', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'A.R.C.H. index entry: Humanoid Death Whisper. Research notes are awaiting publication.' },
+      { id:'ARC-009', name:'The Mass', rank:'UNASSIGNED', type:'Unspecified', status:'pending', excerpt:'Case designation reserved. Detailed file has not been published.', report:'A.R.C.H. index entry: The Mass. Research notes are awaiting publication.' },
+      { id:'ARC-420', name:'Terraprisma', rank:'OMEGA', type:'Anomalous Light', status:'documented', excerpt:'A light-associated entity known for visions and harmonic tones.', report:'Terraprisma manifests through intense light phenomena, including concentrated beams and other powerful luminous events. A.R.C.H. researchers document reports of unusual visions and harmonic tones among observers.\n\nPolarized filters are a standard fictional observation precaution. The archive associates prolonged exposure with intervention by a specialist photonic-dampening team.\n\nRelated record: ARC-420-B.' },
+      { id:'ARC-420-B', name:'Superconticombulatingultaparalax', rank:'UNASSIGNED', type:'Related Phenomenon', status:'documented', excerpt:'The luminous, four-pointed crystalline counterpart to ARC-420.', report:'ARC-420-B is linked to the Terraprisma family. Its recorded appearance is a sharply faceted, four-pointed crystal surrounded by golden light and aurora-like structures.\n\nThe relationship between this manifestation and ARC-420 remains the subject of ongoing fictional research. Its independent hazard class has not been assigned in the public records.' }
+    ];
+    const grid = document.getElementById('case-grid');
+    const search = document.getElementById('case-search');
+    const filters = [...document.querySelectorAll('[data-filter]')];
+    let activeFilter = 'all'; let previousFocus = null;
+    const h = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    document.getElementById('record-count').textContent = String(CASES.length).padStart(2,'0');
+    function renderCases() {
+      const query = search.value.trim().toLowerCase();
+      const items = CASES.filter(c => (activeFilter === 'all' || c.status === activeFilter) && (`${c.id} ${c.name} ${c.rank} ${c.type} ${c.excerpt}`).toLowerCase().includes(query));
+      grid.innerHTML = items.length ? items.map(c => `<button type="button" class="case-card" data-case="${h(c.id)}" aria-label="Open ${h(c.id)} ${h(c.name)}"><span class="card-top"><span class="case-id">${h(c.id)}</span><span class="case-rank ${c.rank==='OMEGA'||c.rank==='APOCALYPTIC'?'omega':c.rank==='UNASSIGNED'?'pending':''}">${h(c.rank)}</span></span><span class="case-name">${h(c.name)}</span><span class="case-text">${h(c.excerpt)}</span><span class="card-foot">${c.status==='pending'?'FILE INCOMPLETE':'PUBLIC EXCERPT AVAILABLE'}</span></button>`).join('') : `<p class="empty">NO MATCHING RECORDS // Try another search or filter.</p>`;
     }
-
-    function showError() {
-      errorDiv.style.display = 'block';
-      setTimeout(() => errorDiv.style.display = 'none', 2000);
+    filters.forEach(button => button.addEventListener('click', () => {
+      activeFilter=button.dataset.filter;filters.forEach(b => b.setAttribute('aria-pressed',String(b===button)));renderCases();
+    }));
+    search.addEventListener('input', renderCases);
+    grid.addEventListener('click', event => { const btn=event.target.closest('[data-case]');if(btn)openCase(btn.dataset.case); });
+    const modal=document.getElementById('file-modal');
+    function openCase(id) {
+      const c=CASES.find(x=>x.id.toLowerCase()===String(id).toLowerCase());
+      if(!c)return false;
+      previousFocus=document.activeElement;
+      document.getElementById('modal-id').textContent=c.id+' // ANOMALOUS RESEARCH CASE';
+      document.getElementById('modal-title').textContent=c.name;
+      document.getElementById('modal-class').textContent=c.rank;
+      document.getElementById('modal-status').textContent=c.status==='pending'?'AWAITING RESEARCH NOTES':'PUBLIC EXCERPT AVAILABLE';
+      document.getElementById('modal-type').textContent=c.type;
+      document.getElementById('modal-report').textContent=c.report;
+      modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+      document.getElementById('modal-close').focus();return true;
     }
-
-    /* Hover interactions */
-    titleHeading.addEventListener('mouseenter', () => isHoveringHeading = true);
-    titleHeading.addEventListener('mouseleave', () => isHoveringHeading = false);
-
-    /* Form Handlers */
-    document.getElementById('keyForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const val = keyInput.value.trim().toLowerCase();
-      if (val === SECRET_KEY_1) {
-        document.querySelector('.viewport-wrapper').style.display = 'none';
-        successScreen.style.display = 'flex';
-        layer2Input.focus();
-      } else {
-        showError();
-      }
+    function closeCase(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';if(previousFocus && previousFocus.isConnected)previousFocus.focus();}
+    document.getElementById('modal-close').addEventListener('click',closeCase);
+    modal.addEventListener('click',e=>{if(e.target===modal)closeCase();});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'&&modal.classList.contains('is-open'))closeCase();
+      if(e.key==='Tab'&&modal.classList.contains('is-open')){e.preventDefault();document.getElementById('modal-close').focus();}
     });
-
-    document.getElementById('layer2Form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const val = layer2Input.value.trim().toLowerCase();
-      if (val === SECRET_KEY_2) {
-        successScreen.style.display = 'none';
-        successScreenLayer2.style.display = 'flex';
-        startTunnelAnimation();
-        setTimeout(() => layer3Input.focus(), 100);
-      } else {
-        triggerCrash();
-      }
+    const terminalLog=document.getElementById('terminal-log');
+    const cmdInput=document.getElementById('terminal-command');
+    function printLine(value,kind=''){const d=document.createElement('div');if(kind)d.className=kind;d.textContent=value;terminalLog.appendChild(d);terminalLog.scrollTop=terminalLog.scrollHeight;}
+    document.getElementById('terminal-form').addEventListener('submit',event=>{
+      event.preventDefault();const raw=cmdInput.value.trim();cmdInput.value='';if(!raw)return;
+      printLine('ARCH> '+raw,'cmd');const lower=raw.toLowerCase();
+      if(lower==='help') {printLine('COMMANDS: help | list | status | open ARC-### | clear | //RESTRICTED');}
+      else if(lower==='list') {printLine(CASES.map(c=>c.id+' '+c.name).join('  /  '));}
+      else if(lower==='status') {printLine('ARCHIVE ONLINE // '+CASES.length+' indexed cases // 3 divisions // PUBLIC CLEARANCE');}
+      else if(lower==='clear') {terminalLog.textContent='';}
+      else if(lower==='//restricted') {printLine('ACCESS DENIED // RESTRICTED ARCHIVE NOT AVAILABLE IN PUBLIC SIMULATION','warn');}
+      else if(lower.startsWith('open ')) {const id=raw.slice(5).trim().toUpperCase();if(openCase(id))printLine('FILE OPENED // '+id);else printLine('RECORD NOT FOUND // CHECK CASE ID','warn');}
+      else {printLine('UNKNOWN COMMAND // TYPE HELP','warn');}
     });
-
-    document.getElementById('layer3Form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      layer3Input.value = '';
-      layer3Input.placeholder = 'NO PASSWORD REQUIRED';
-    });
-
-    /* Resize Manager */
-    function resize() {
-      staticCanvas.width = window.innerWidth;
-      staticCanvas.height = window.innerHeight;
-      glitchCanvas.width = window.innerWidth;
-      glitchCanvas.height = window.innerHeight;
-      tunnelCanvas.width = window.innerWidth;
-      tunnelCanvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    /* Canvas Animations */
-    function generateStatic() {
-      const w = staticCanvas.width;
-      const h = staticCanvas.height;
-      if (w === 0 || h === 0) return;
-      
-      const imgData = staticCtx.createImageData(w, h);
-      const buffer = new Uint32Array(imgData.data.buffer);
-      for (let i = 0; i < buffer.length; i++) {
-        if (Math.random() < 0.5) buffer[i] = 0xffffffff;
-      }
-      staticCtx.putImageData(imgData, 0, 0);
-    }
-
-    function animateTextStatic() {
-      const imgData = textStaticCtx.createImageData(128, 128);
-      const data = imgData.data;
-      const noiseThreshold = isHoveringHeading ? 0.8 : 0.5;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const val = Math.random() < noiseThreshold ? 255 : (isHoveringHeading ? 50 : 120);
-        data[i] = 255; 
-        data[i + 1] = 255; 
-        data[i + 2] = val; 
-        data[i + 3] = 255;
-      }
-
-      textStaticCtx.putImageData(imgData, 0, 0);
-      titleHeading.style.backgroundImage = `url(${textStaticCanvas.toDataURL()})`;
-    }
-
-    setInterval(() => {
-      generateStatic();
-      animateTextStatic();
-    }, 80);
-
-    /* 3D Pale Yellow Tunnel Render Engine */
-    let zOffset = 0;
-    function startTunnelAnimation() {
-      if (tunnelAnimId) cancelAnimationFrame(tunnelAnimId);
-      
-      function renderTunnel() {
-        const w = tunnelCanvas.width;
-        const h = tunnelCanvas.height;
-        const cx = w / 2;
-        const cy = h / 2;
-        const fov = 420;
-
-        tunnelCtx.fillStyle = '#020201';
-        tunnelCtx.fillRect(0, 0, w, h);
-        zOffset += 0.025;
-
-        // Flare Glow
-        const flareGlow = tunnelCtx.createRadialGradient(cx, cy, 2, cx, cy, Math.max(w, h) * 0.35);
-        flareGlow.addColorStop(0, '#ffffff');
-        flareGlow.addColorStop(0.08, '#ffffd0');
-        flareGlow.addColorStop(0.25, '#e8e2aa');
-        flareGlow.addColorStop(0.55, 'rgba(160, 155, 110, 0.2)');
-        flareGlow.addColorStop(1, 'rgba(0,0,0,0)');
-
-        tunnelCtx.fillStyle = flareGlow;
-        tunnelCtx.beginPath();
-        tunnelCtx.arc(cx, cy, Math.max(w, h) * 0.35, 0, Math.PI * 2);
-        tunnelCtx.fill();
-
-        // Structural Rays
-        const numRings = 20;
-        const ringSpacing = 0.8;
-        tunnelCtx.strokeStyle = 'rgba(245, 240, 170, 0.4)';
-        tunnelCtx.lineWidth = 1;
-
-        for (let i = 0; i < numRings; i++) {
-          let z = ((i * ringSpacing - zOffset) % (numRings * ringSpacing));
-          if (z < 0.1) z += numRings * ringSpacing;
-          const scale = fov / z;
-          const r = 1.8 * scale;
-          
-          tunnelCtx.beginPath();
-          tunnelCtx.arc(cx, cy, r, 0, Math.PI * 2);
-          tunnelCtx.stroke();
-        }
-
-        tunnelAnimId = requestAnimationFrame(renderTunnel);
-      }
-      renderTunnel();
-    }
+    renderCases();
   </script>
 </body>
 </html>
